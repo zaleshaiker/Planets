@@ -231,7 +231,6 @@ def draw(s):
 # size = 2
 # board = [[Type.Sun, Type.Sun], [Type.Planet, Type.Sun]]
 board = generate_board(random.randint(size, int(2.5 * size) - 5))
-print(board)
 play_board = generate_play_board()
 
 while not done:
