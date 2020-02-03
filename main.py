@@ -8,6 +8,7 @@ class Type(Enum):
 	Planet = 1
 	Sun = 2
 	Nebula = 3
+	Marked = 4
 
 size = 4
 board = [[]]
@@ -81,8 +82,8 @@ def generate_board(planets=size):
 
 def generate_play_board():
 	play_board = [[Type.Empty for col in range(size)] for row in range(size)]
-	for row in range(len(board)):
-		for col in range(len(board[row])):
+	for row in range(size):
+		for col in range(size):
 			if board[row][col] == Type.Planet:
 				play_board[row][col] = Type.Planet
 			else:
@@ -189,7 +190,15 @@ def get_planet_mask_img(board, img, row, col):
 
 
 def update():
-	pass
+	finished = True
+	for row in range(size):
+		for col in range(size):
+			if board[row][col] == play_board[row][col] or (play_board[row][col] == Type.Marked and board[row][col] == Type.Empty):
+				finished = finished and True
+			else:
+				finished = finished and False
+	if finished:
+		print('Done')
 
 def draw(s):
 	surface = pygame.Surface((W, H), pygame.SRCALPHA)
@@ -216,20 +225,22 @@ def draw(s):
 				img = pygame.transform.scale(img, rect.size)
 				img = get_planet_mask_img(board, img, row, col)
 				surface.blit(img, rect.topleft)
-			elif board[row][col] == Type.Sun:
+			elif play_board[row][col] == Type.Sun:
 				# pygame.draw.circle(surface, YELLOW, rect.center, int(rect.width / 3))
 				img = pygame.transform.scale(sun_img, rect.size)
 				# img.fill((100, 100, 100, 0), rect=img.get_rect().move(img.get_width()/2,0), special_flags=pygame.BLEND_RGBA_SUB)
 				surface.blit(img, rect.topleft)
-				# pygame.draw.rect(surface, (255, 255, 255, 128), rect)
-			elif board[row][col] == Type.Nebula:
+			elif play_board[row][col] == Type.Nebula:
 				# pygame.draw.rect(surface, RED, rect)
 				img = pygame.transform.scale(nebula_img, rect.size)
 				surface.blit(img, rect.topleft)
+			elif play_board[row][col] == Type.Marked:
+				pygame.draw.circle(surface, WHITE, rect.center, int(rect.width / 50))
+
 	s.blit(surface, (0, 0))
 
 # size = 2
-# board = [[Type.Sun, Type.Sun], [Type.Planet, Type.Sun]]
+# board = [[Type.Marked, Type.Marked], [Type.Marked, Type.Marked]]
 board = generate_board(random.randint(size, int(2.5 * size) - 5))
 play_board = generate_play_board()
 
@@ -250,6 +261,20 @@ while not done:
 		elif event.type == pygame.KEYUP and (event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT):
 			board = generate_board(random.randint(size, int(2.5 * size) - 5))
 			play_board = generate_play_board()
+		
+
+		if event.type == pygame.MOUSEBUTTONUP:
+			x, y = pygame.mouse.get_pos()
+			row = int(y / (H / size))
+			col = int(x / (W / size))
+			if play_board[row][col] == Type.Empty:
+				play_board[row][col] = Type.Marked
+			elif play_board[row][col] == Type.Marked:
+				play_board[row][col] = Type.Sun
+			elif play_board[row][col] == Type.Sun:
+				play_board[row][col] = Type.Nebula
+			elif play_board[row][col] == Type.Nebula:
+				play_board[row][col] = Type.Empty
 
 	# Game Logic
 	update()
